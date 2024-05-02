@@ -9,6 +9,8 @@ class MainPackageInstaller:ReactPackage {
     override fun createNativeModules(reactApplicationContext: ReactApplicationContext): List<NativeModule> {
         val modules: MutableList<NativeModule> = ArrayList()
         modules.add(SMSModule(reactApplicationContext))
+        modules.add(ContactsModule(reactApplicationContext))
+
         return modules
     }
 
