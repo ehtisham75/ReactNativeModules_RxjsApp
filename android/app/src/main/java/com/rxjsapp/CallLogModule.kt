@@ -4,13 +4,12 @@ import android.Manifest
 import android.content.ContentResolver
 import android.content.pm.PackageManager
 import android.database.Cursor
-import android.provider.ContactsContract
+import android.provider.CallLog
 import com.facebook.react.bridge.*
 import com.facebook.react.modules.core.PermissionAwareActivity
 import com.facebook.react.modules.core.PermissionListener
 
-class ContactsModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext), PermissionListener {
-
+class CallLogModule(reactContext: ReactApplicationContext) :ReactContextBaseJavaModule(reactContext), PermissionListener {
     private var promise: Promise? = null
 
     companion object {
@@ -18,14 +17,14 @@ class ContactsModule(reactContext: ReactApplicationContext) : ReactContextBaseJa
     }
 
     override fun getName(): String {
-        return "ContactsModule"
+        return "CallLogModule"
     }
 
     @ReactMethod
-    fun getContacts(promise: Promise) {
+    fun getCallLogs(promise: Promise) {
         this.promise = promise
         if (checkPermissions()) {
-            fetchContacts()
+            fetchCallLogs()
         } else {
             requestPermissions()
         }
@@ -33,24 +32,24 @@ class ContactsModule(reactContext: ReactApplicationContext) : ReactContextBaseJa
 
     private fun checkPermissions(): Boolean {
         val currentActivity = currentActivity ?: return false
-        val permissionStatus = currentActivity.checkSelfPermission(Manifest.permission.READ_CONTACTS)
+        val permissionStatus = currentActivity.checkSelfPermission(Manifest.permission.READ_CALL_LOG)
         return permissionStatus == PackageManager.PERMISSION_GRANTED
     }
 
     private fun requestPermissions() {
         val currentActivity = currentActivity ?: return
         (currentActivity as? PermissionAwareActivity)?.requestPermissions(
-            arrayOf(Manifest.permission.READ_CONTACTS),
-            PERMISSION_REQUEST_CODE,
+            arrayOf(Manifest.permission.READ_CALL_LOG),
+            ContactsModule.PERMISSION_REQUEST_CODE,
             this
         )
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray): Boolean {
-        if (requestCode == PERMISSION_REQUEST_CODE) {
+        if (requestCode == ContactsModule.PERMISSION_REQUEST_CODE) {
             val isPermissionGranted = grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED
             if (isPermissionGranted) {
-                fetchContacts()
+                fetchCallLogs()
             } else {
                 promise?.reject("PERMISSION_DENIED", "Permission denied for accessing contacts.")
             }
@@ -59,12 +58,11 @@ class ContactsModule(reactContext: ReactApplicationContext) : ReactContextBaseJa
         return false
     }
 
-
-    private fun fetchContacts() {
-        val contactsArray: WritableArray = Arguments.createArray()
+    private fun fetchCallLogs() {
+        val logsTempArray: WritableArray = Arguments.createArray()
         val contentResolver: ContentResolver = reactApplicationContext.contentResolver
         val cursor: Cursor? = contentResolver.query(
-            ContactsContract.Contacts.CONTENT_URI,
+            CallLog.Calls.CONTENT_URI,
             null,
             null,
             null,
@@ -73,16 +71,16 @@ class ContactsModule(reactContext: ReactApplicationContext) : ReactContextBaseJa
 
         cursor?.use {
             while (it.moveToNext()) {
-                val contactMap = Arguments.createMap()
-                val id: String? = it.getString(it.getColumnIndex(ContactsContract.Contacts._ID))
-                val name: String? = it.getString(it.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME))
-                if (name != null) {
-                    contactMap.putString("id", id ?: "")
-                    contactMap.putString("name", name)
-                    contactsArray.pushMap(contactMap)
+                val callLogMap = Arguments.createMap()
+                val id: String? = it.getString(it.getColumnIndex(CallLog.Calls._ID))
+                val number: String? = it.getString(it.getColumnIndex(CallLog.Calls.NUMBER))
+                if (number != null) {
+                    callLogMap.putString("id", id ?: "")
+                    callLogMap.putString("number", number)
+                    logsTempArray.pushMap(callLogMap)
                 }
             }
         }
-        promise?.resolve(contactsArray)
+        promise?.resolve(logsTempArray)
     }
 }

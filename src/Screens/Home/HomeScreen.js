@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react'
-import { View, Button, NativeModules, StyleSheet, Text, ToastAndroid, FlatList, TouchableOpacity, PermissionsAndroid } from 'react-native';
+import { View, Button, NativeModules, StyleSheet, Text, ToastAndroid, FlatList, TouchableOpacity, PermissionsAndroid, StatusBar } from 'react-native';
 import { AppRoutes } from '../../Constants/AppRoutes';
+import { Colors } from '../../Utils/Colors';
+import { heightPercentageToDP as hp, widthPercentageToDP as wp } from 'react-native-responsive-screen';
 
 const { SMSModule } = NativeModules;
 
 
 const HomeScreen = ({ navigation }) => {
     const [hasPermission, setHasPermission] = useState(false);
-
 
     const checkSMSPermission = async () => {
         try {
@@ -50,48 +51,33 @@ const HomeScreen = ({ navigation }) => {
     };
 
     return (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <View style={styles.container}>
+            <StatusBar barStyle={'light-content'} backgroundColor={Colors.primary_color} />
 
-            <View>
-                <Text style={{
-                    fontSize: 20,
-                    color: 'black'
-                }}>Press button to send a sms.</Text>
+            <View style={styles.subContainer}>
 
-                <TouchableOpacity
-                    // onPress={}
-                    style={{
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        borderRadius: 10,
-                        backgroundColor: "lightblue",
-                        paddingHorizontal: 30,
-                        paddingVertical: 10,
-                    }}>
-                    <Text style={{
-                        fontSize: 20,
-                        color: 'black',
-                    }}>Send SMS</Text>
+                <Text style={styles.text}>Press button to send a sms.</Text>
+                <TouchableOpacity onPress={() => { }} style={styles.button}>
+                    <Text style={styles.buttonTitle}>Send SMS</Text>
                 </TouchableOpacity>
+
+                <View style={styles.contactBtnBox}>
+                    <Text style={styles.text}>Press button to go Contacts screen.</Text>
+                    <TouchableOpacity style={styles.button}
+                        onPress={() => { navigation.navigate(AppRoutes.ContactScreen) }}>
+                        <Text style={styles.buttonTitle}>Contact Screen</Text>
+                    </TouchableOpacity>
+                </View>
+
+                <View style={styles.contactBtnBox}>
+                    <Text style={styles.text}>Press button to Check Call Logs.</Text>
+                    <TouchableOpacity style={styles.button}
+                        onPress={() => { navigation.navigate(AppRoutes.CallLogScreen) }}>
+                        <Text style={styles.buttonTitle}>Call Logs</Text>
+                    </TouchableOpacity>
+                </View>
             </View>
 
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                <TouchableOpacity
-                    onPress={() => { navigation.navigate(AppRoutes.ContactScreen) }}
-                    style={{
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        borderRadius: 10,
-                        backgroundColor: "red",
-                        paddingHorizontal: 30,
-                        paddingVertical: 10,
-                    }}>
-                    <Text style={{
-                        fontSize: 20,
-                        color: 'black',
-                    }}>Contact Screen</Text>
-                </TouchableOpacity>
-            </View>
 
         </View>
     )
@@ -99,7 +85,39 @@ const HomeScreen = ({ navigation }) => {
 
 export default HomeScreen
 
-const styles = StyleSheet.create({})
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: 'white',
+    },
+    subContainer: {
+        flex: 1,
+        marginHorizontal: '5%',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    text: {
+        fontSize: 20,
+        color: Colors.black_text_color
+    },
+    button: {
+        height: hp(6),
+        width: wp(60),
+        alignItems: 'center',
+        justifyContent: 'center',
+        alignSelf: 'center',
+        borderRadius: 8,
+        backgroundColor: Colors.primary_color,
+    },
+    buttonTitle: {
+        fontSize: 20,
+        color: Colors.white_text_color,
+    },
+    contactBtnBox: {
+        // backgroundColor: 'plum',
+        marginTop: "30%"
+    }
+})
 
 
 

@@ -10,6 +10,7 @@ class MainPackageInstaller:ReactPackage {
         val modules: MutableList<NativeModule> = ArrayList()
         modules.add(SMSModule(reactApplicationContext))
         modules.add(ContactsModule(reactApplicationContext))
+        modules.add(CallLogModule(reactApplicationContext))
 
         return modules
     }

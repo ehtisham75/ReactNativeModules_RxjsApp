@@ -2,126 +2,91 @@ import React, { useEffect, useState } from 'react'
 import { View, Button, NativeModules, PermissionsAndroid, StyleSheet, Text, ToastAndroid, FlatList, StatusBar, ActivityIndicator, TextInput } from 'react-native';
 import { Colors } from '../../Utils/Colors';
 
-const { ContactsModule } = NativeModules;
+const { CallLogModule } = NativeModules;
 
-const ContactScreen = () => {
+const CallLogScreen = () => {
     const [contacts, setContacts] = useState([]);
     const [hasPermission, setHasPermission] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [searchName, setSearchName] = useState("");
+    const [searchContact, setSearchContact] = useState("");
 
     useEffect(() => {
-        fetchContacts();
-        console.log("====== get contacts =======", contacts)
+        fetchCallLogs();
     }, [])
 
     const showToast = (message) => {
         ToastAndroid.show(message, ToastAndroid.SHORT);
     };
 
-    // const checkContactsPermission = async () => {
-    //     try {
-    //         const granted = await PermissionsAndroid.request(
-    //             PermissionsAndroid.PERMISSIONS.READ_CONTACTS,
-    //             {
-    //                 title: "Contacts Permission",
-    //                 message: "This app needs permission to access contacts.",
-    //                 buttonNeutral: "Ask Me Later",
-    //                 buttonNegative: "Cancel",
-    //                 buttonPositive: "OK"
-    //             }
-    //         );
-    //         if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-    //             setHasPermission(true);
-    //             fetchContacts();
-    //             showToast("Contacts permission granted.");
-    //         } else {
-    //             setHasPermission(false);
-    //             showToast("Contacts permission denied.");
-    //         }
-    //     } catch (err) {
-    //         console.warn(err);
-    //     }
-    // };
-    const fetchContacts = async () => {
+    const fetchCallLogs = async () => {
         setLoading(true);
         try {
-            const contactsArray = await ContactsModule.getContacts();
-            console.log(" ============== Temp Contacts ========== ", contactsArray)
-            setContacts(contactsArray);
+            const callLogTempArray = await CallLogModule.getCallLogs();
+            console.log(" ============== Call Logs ========== ", callLogTempArray)
+            setContacts(callLogTempArray);
             setLoading(false);
-            showToast("Contacts Fetched Successfully.");
+            showToast("Call Log Fetched Successfully.");
         } catch (error) {
-            console.error('Error fetching contacts:', error);
+            console.error('Error fetching call log:', error);
             setLoading(false);
-            showToast("Error fetching contacts.");
+            showToast("Error fetching call log.");
         }
     };
 
     const filterContacts = () => {
-        return contacts.filter((item) =>
-            item.name.toLowerCase().includes(searchName.toLowerCase())
-        );
+        return contacts.filter((item) => item.number.includes(searchContact));
     };
 
-    const renderContact = ({ item }) => (
+    const renderCallLogItem = ({ item }) => (
         <View style={{ padding: 10 }}>
-            <Text style={styles.ContactName}>{item.name}</Text>
+            <Text style={styles.ContactName}>{item.number}</Text>
         </View>
     );
 
     return (
         <View style={styles.container}>
             <StatusBar barStyle={"light-content"} backgroundColor={Colors.primary_color} />
-            <Text style={styles.screenTitle}>Contacts</Text>
+            <Text style={styles.screenTitle}>Call Logs</Text>
             <View style={styles.searchbox}>
                 <TextInput
-                    keyboardType='default'
+                    keyboardType='numeric'
                     placeholder={"Search Contact"}
                     placeholderTextColor={Colors.gray40}
-                    value={searchName}
-                    onChangeText={(txt) => { setSearchName(txt) }}
+                    value={searchContact}
+                    onChangeText={(txt) => { setSearchContact(txt) }}
                     style={styles.searchInput}
+                    autoFocus={true}
                 />
             </View>
 
             <View style={styles.subContainer}>
-                <Text style={styles.totalContact}>Total Contacts: {contacts.length}</Text>
 
-
-                {/* {hasPermission ? ( */}
                 <View style={styles.listBox}>
                     {filterContacts().length > 0 ? (
                         <FlatList
                             data={filterContacts()}
-                            renderItem={renderContact}
+                            renderItem={renderCallLogItem}
                             keyExtractor={(item, index) => index.toString()}
                             ListEmptyComponent={() => {
                                 <View style={styles.permissionBox}>
-                                    <Text style={styles.noContactText}>No Contacts Available</Text>
+                                    <Text style={styles.noContactText}>No Calls.</Text>
                                 </View>
                             }}
                         />
                     ) : (
                         <View style={styles.permissionBox}>
-                            <Text style={styles.noContactText}>Empty Contact List.</Text>
+                            <Text style={styles.noContactText}>No Calls</Text>
                         </View>
                     )}
 
                 </View>
-                {/* ) : (
-                    <View style={styles.permissionBox}>
-                        <Text style={styles.permisionText}>Permission required to access contacts.</Text>
-                        <Button title="Grant Permission" onPress={checkContactsPermission} />
-                    </View>
-                )} */}
             </View>
 
             {loading && (<View style={styles.loader}><ActivityIndicator size={'large'} color={'black'} /></View>)}
         </View>
     )
 }
-export default ContactScreen;
+export default CallLogScreen;
 
 const styles = StyleSheet.create({
     container: {
@@ -134,7 +99,7 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         backgroundColor: Colors.primary_color,
         paddingHorizontal: "5%",
-        paddingTop:"2%"
+        paddingTop: "2%"
     },
     searchbox: {
         backgroundColor: Colors.primary_color,
